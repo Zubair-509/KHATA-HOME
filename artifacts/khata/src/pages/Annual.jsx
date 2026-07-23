@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
 import { listYears } from '../lib/db'
 import { computeYearlyTotals } from '../lib/calculations'
 import { formatPKR, formatMonthYear } from '../lib/format'
-import { Card, Badge, Select } from '../components/ui'
+import { Button, Card, Badge, Select } from '../components/ui'
 
 export default function Annual() {
+  const printRef = useRef(null)
   const [years, setYears] = useState([])
   const [year, setYear] = useState(null)
   const [data, setData] = useState(null)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -27,6 +31,20 @@ export default function Annual() {
     }
     load()
   }, [year])
+
+  async function handleExportPdf() {
+    if (!printRef.current || !data) return
+    setExporting(true)
+    try {
+      const canvas = await html2canvas(printRef.current, { scale: 2, backgroundColor: '#FFFFFF' })
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({ unit: 'px', format: [canvas.width, canvas.height] })
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
+      pdf.save(`khata-annual-${year}.pdf`)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   if (years.length === 0) {
     return (
@@ -53,15 +71,22 @@ export default function Annual() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="font-display text-title-xl text-primary-900">Annual Summary</h1>
-        <Select value={year} onChange={(e) => setYear(Number(e.target.value))} className="w-32">
-          {years.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </Select>
+        <div className="flex items-center gap-3">
+          <Select value={year} onChange={(e) => setYear(Number(e.target.value))} className="w-32">
+            {years.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </Select>
+          {data && (
+            <Button onClick={handleExportPdf} disabled={exporting}>
+              {exporting ? 'Exporting…' : 'Export PDF'}
+            </Button>
+          )}
+        </div>
       </div>
 
       {data && (
-        <>
+        <div ref={printRef} className="flex flex-col gap-6 bg-bg-base p-2">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <Card>
               <div className="text-label uppercase text-neutral-500">Total Inflow</div>
@@ -128,7 +153,7 @@ export default function Annual() {
               </tbody>
             </table>
           </Card>
-        </>
+        </div>
       )}
     </div>
   )

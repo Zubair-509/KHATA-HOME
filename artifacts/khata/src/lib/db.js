@@ -112,3 +112,41 @@ export async function listYears() {
   const years = new Set(months.map((m) => m.year))
   return Array.from(years).sort((a, b) => b - a)
 }
+
+// ── Receipt photo helpers (FR-2.7) ──────────────────────────────────────────
+
+/** Save or replace a receipt image for a specific entry within a month record. */
+export async function saveReceipt(recordId, fieldRef, imageBlob) {
+  const existing = await db.receipts
+    .where('recordId').equals(recordId)
+    .filter((r) => r.fieldRef === fieldRef)
+    .first()
+  if (existing) {
+    await db.receipts.update(existing.id, { imageBlob, uploadedAt: new Date().toISOString() })
+  } else {
+    await db.receipts.add({ recordId, fieldRef, imageBlob, uploadedAt: new Date().toISOString() })
+  }
+}
+
+/** Retrieve a receipt for a specific entry. Returns the record or undefined. */
+export async function getReceipt(recordId, fieldRef) {
+  return db.receipts
+    .where('recordId').equals(recordId)
+    .filter((r) => r.fieldRef === fieldRef)
+    .first()
+}
+
+/** Delete a receipt for a specific entry. */
+export async function deleteReceipt(recordId, fieldRef) {
+  const rec = await db.receipts
+    .where('recordId').equals(recordId)
+    .filter((r) => r.fieldRef === fieldRef)
+    .first()
+  if (rec) await db.receipts.delete(rec.id)
+}
+
+/** Delete all receipts for a month record (used when deleting a month). */
+export async function deleteMonthReceipts(recordId) {
+  const ids = await db.receipts.where('recordId').equals(recordId).primaryKeys()
+  await db.receipts.bulkDelete(ids)
+}

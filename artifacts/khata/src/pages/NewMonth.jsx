@@ -122,10 +122,10 @@ export default function NewMonth() {
             <p className="text-body-sm text-neutral-500 mb-2">
               KE Bill, KWSB Bill, and the full SSGC / Motor bills before splitting.
             </p>
-            <EntryField label="KE (Electricity)" value={record.groundFloor.ke} onChange={(v) => updateFloor('groundFloor', 'ke', v)} />
-            <EntryField label="KWSB (Water)" value={record.groundFloor.kwsb} onChange={(v) => updateFloor('groundFloor', 'kwsb', v)} />
-            <EntryField label="SSGC Total (Full Bill)" value={record.groundFloor.ssgcTotal} onChange={(v) => updateFloor('groundFloor', 'ssgcTotal', v)} />
-            <EntryField label="Motor Total (Full Bill)" value={record.groundFloor.motorTotal} onChange={(v) => updateFloor('groundFloor', 'motorTotal', v)} />
+            <EntryField label="KE (Electricity)" value={record.groundFloor.ke} onChange={(v) => updateFloor('groundFloor', 'ke', v)} recordId={record.id} fieldRef="groundFloor.ke" />
+            <EntryField label="KWSB (Water)" value={record.groundFloor.kwsb} onChange={(v) => updateFloor('groundFloor', 'kwsb', v)} recordId={record.id} fieldRef="groundFloor.kwsb" />
+            <EntryField label="SSGC Total (Full Bill)" value={record.groundFloor.ssgcTotal} onChange={(v) => updateFloor('groundFloor', 'ssgcTotal', v)} recordId={record.id} fieldRef="groundFloor.ssgcTotal" />
+            <EntryField label="Motor Total (Full Bill)" value={record.groundFloor.motorTotal} onChange={(v) => updateFloor('groundFloor', 'motorTotal', v)} recordId={record.id} fieldRef="groundFloor.motorTotal" />
           </Card>
 
           <Card>
@@ -135,10 +135,10 @@ export default function NewMonth() {
             <p className="text-body-sm text-neutral-500 mb-2">
               Rent: {formatPKR(snapshot.rents.first)} · SSGC share: {formatPKR(totals.ssgcShare.first)} · Motor share: {formatPKR(totals.motorShare.first)}
             </p>
-            <EntryField label="Own KE (Electricity)" value={record.firstFloor.ke} onChange={(v) => updateFloor('firstFloor', 'ke', v)} />
-            <EntryField label="Rent Received" value={record.firstFloor.rentReceived} onChange={(v) => updateFloor('firstFloor', 'rentReceived', v)} />
-            <EntryField label="SSGC Share Received" value={record.firstFloor.ssgcShareReceived} onChange={(v) => updateFloor('firstFloor', 'ssgcShareReceived', v)} />
-            <EntryField label="Motor Share Received" value={record.firstFloor.motorShareReceived} onChange={(v) => updateFloor('firstFloor', 'motorShareReceived', v)} />
+            <EntryField label="Own KE (Electricity)" value={record.firstFloor.ke} onChange={(v) => updateFloor('firstFloor', 'ke', v)} recordId={record.id} fieldRef="firstFloor.ke" />
+            <EntryField label="Rent Received" value={record.firstFloor.rentReceived} onChange={(v) => updateFloor('firstFloor', 'rentReceived', v)} recordId={record.id} fieldRef="firstFloor.rentReceived" />
+            <EntryField label="SSGC Share Received" value={record.firstFloor.ssgcShareReceived} onChange={(v) => updateFloor('firstFloor', 'ssgcShareReceived', v)} recordId={record.id} fieldRef="firstFloor.ssgcShareReceived" />
+            <EntryField label="Motor Share Received" value={record.firstFloor.motorShareReceived} onChange={(v) => updateFloor('firstFloor', 'motorShareReceived', v)} recordId={record.id} fieldRef="firstFloor.motorShareReceived" />
           </Card>
 
           <Card>
@@ -148,11 +148,11 @@ export default function NewMonth() {
             <p className="text-body-sm text-neutral-500 mb-2">
               Rent: {formatPKR(snapshot.rents.second)} · SSGC share: {formatPKR(totals.ssgcShare.second)} · Motor share: {formatPKR(totals.motorShare.second)}
             </p>
-            <EntryField label="KE (Paid by Owner)" value={record.secondFloor.ke} onChange={(v) => updateFloor('secondFloor', 'ke', v)} />
-            <EntryField label="KE Reimbursement Received" value={record.secondFloor.keReceived} onChange={(v) => updateFloor('secondFloor', 'keReceived', v)} />
-            <EntryField label="Rent Received" value={record.secondFloor.rentReceived} onChange={(v) => updateFloor('secondFloor', 'rentReceived', v)} />
-            <EntryField label="SSGC Share Received" value={record.secondFloor.ssgcShareReceived} onChange={(v) => updateFloor('secondFloor', 'ssgcShareReceived', v)} />
-            <EntryField label="Motor Share Received" value={record.secondFloor.motorShareReceived} onChange={(v) => updateFloor('secondFloor', 'motorShareReceived', v)} />
+            <EntryField label="KE (Paid by Owner)" value={record.secondFloor.ke} onChange={(v) => updateFloor('secondFloor', 'ke', v)} recordId={record.id} fieldRef="secondFloor.ke" />
+            <EntryField label="KE Reimbursement Received" value={record.secondFloor.keReceived} onChange={(v) => updateFloor('secondFloor', 'keReceived', v)} recordId={record.id} fieldRef="secondFloor.keReceived" />
+            <EntryField label="Rent Received" value={record.secondFloor.rentReceived} onChange={(v) => updateFloor('secondFloor', 'rentReceived', v)} recordId={record.id} fieldRef="secondFloor.rentReceived" />
+            <EntryField label="SSGC Share Received" value={record.secondFloor.ssgcShareReceived} onChange={(v) => updateFloor('secondFloor', 'ssgcShareReceived', v)} recordId={record.id} fieldRef="secondFloor.ssgcShareReceived" />
+            <EntryField label="Motor Share Received" value={record.secondFloor.motorShareReceived} onChange={(v) => updateFloor('secondFloor', 'motorShareReceived', v)} recordId={record.id} fieldRef="secondFloor.motorShareReceived" />
           </Card>
         </div>
 

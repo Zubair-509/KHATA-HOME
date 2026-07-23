@@ -4,7 +4,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts'
-import { TrendingUp, PieChart as PieIcon } from 'lucide-react'
+import { TrendingUp, PieChart as PieIcon, AlertTriangle } from 'lucide-react'
 import { listMonths, getMonthByKey, saveMonth, emptyMonthRecord, getSettings } from '../lib/db'
 import { computeMonthTotals, getRecentMonthsTrend } from '../lib/calculations'
 import { formatPKR, formatMonthYear, monthKey } from '../lib/format'
@@ -64,6 +64,9 @@ export default function Dashboard() {
     : []
   const donutTotal = donutData.reduce((s, d) => s + d.value, 0)
 
+  // FR-7.1: Show a warning banner after the 25th when there are pending items
+  const isPastDue = now.getDate() >= 25 && (currentTotals?.pendingCount ?? 0) > 0
+
   if (loading) {
     return <p className="text-neutral-500">Loading dashboard…</p>
   }
@@ -71,6 +74,27 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="font-display text-title-xl text-primary-900">Dashboard</h1>
+
+      {/* FR-7.1 Pending banner — shown after the 25th when items are outstanding */}
+      {isPastDue && (
+        <div className="flex items-start gap-3 bg-pending-bg border border-pending-border rounded-lg px-4 py-3">
+          <AlertTriangle size={18} strokeWidth={1.5} className="text-pending-text mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-body-md font-semibold text-pending-text">
+              {currentTotals.pendingCount} pending item{currentTotals.pendingCount === 1 ? '' : 's'} — month-end approaching
+            </p>
+            <p className="text-body-sm text-pending-text opacity-80 mt-0.5">
+              It's past the 25th. Confirm any outstanding payments before closing this month.
+            </p>
+          </div>
+          <button
+            onClick={handleStartOrContinue}
+            className="text-body-sm font-semibold text-pending-text underline shrink-0 hover:opacity-70 transition-opacity"
+          >
+            Go to entry →
+          </button>
+        </div>
+      )}
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
