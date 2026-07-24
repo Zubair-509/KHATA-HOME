@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'wouter'
 import { listMonths, listYears } from '../lib/db'
 import { computeMonthTotals } from '../lib/calculations'
 import { formatPKR, formatMonthYear } from '../lib/format'
 import { Card, Badge } from '../components/ui'
 
 export default function HistoryPage() {
-  const navigate = useNavigate()
+  const [, setLocation] = useLocation()
   const [months, setMonths] = useState([])
   const [years, setYears] = useState([])
   const [yearFilter, setYearFilter] = useState('all')
@@ -59,7 +59,7 @@ export default function HistoryPage() {
                     <tr
                       key={m.id}
                       className="border-b border-neutral-100 h-14 hover:bg-neutral-100 cursor-pointer"
-                      onClick={() => navigate(`/history/${m.id}`)}
+                      onClick={() => setLocation(`/history/${m.id}`)}
                     >
                       <td className="px-4 font-body text-body-md">{formatMonthYear(m.monthYear)}</td>
                       <td className="px-4 font-mono text-mono-md text-inflow-text">{formatPKR(t.inflow)}</td>
@@ -87,7 +87,7 @@ export default function HistoryPage() {
             {filtered.map((m) => {
               const t = computeMonthTotals(m)
               return (
-                <Card key={m.id} onClick={() => navigate(`/history/${m.id}`)} className="cursor-pointer">
+                <Card key={m.id} onClick={() => setLocation(`/history/${m.id}`)} className="cursor-pointer">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-display text-title-md text-primary-900">{formatMonthYear(m.monthYear)}</span>
                     <Badge status={m.status === 'finalized' ? 'paid' : 'draft'}>

@@ -11,24 +11,40 @@ A personal building ledger for tracking monthly rent, utility bills, and payment
 
 ## Stack
 
-- npm workspaces, Node.js 20, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- pnpm workspaces, Node.js 20, TypeScript 5.9
+- Frontend: React 19 + Vite 7, Tailwind CSS v3, wouter (routing), Recharts
+- Auth: Clerk (Replit-managed, `@clerk/react` + `@clerk/express`)
+- API: Express 5 (artifacts/api-server)
+- DB: PostgreSQL + Drizzle ORM (lib/db) — not yet wired to frontend (v1 uses IndexedDB/Dexie)
+- Validation: Zod, drizzle-zod
+- Build: esbuild
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/khata/src/App.jsx` — root with ClerkProvider + wouter Router, all route definitions
+- `artifacts/khata/src/components/Layout.jsx` — sidebar (desktop) + bottom tab (mobile) shell
+- `artifacts/khata/src/pages/` — Dashboard, NewMonth, History, MonthlySummary, Annual, Settings, Onboarding
+- `artifacts/khata/src/lib/db.js` — IndexedDB (Dexie) data layer (v1; will be replaced with API calls in v2)
+- `artifacts/khata/src/lib/calculations.js` — bill split math, floor totals
+- `artifacts/api-server/src/app.ts` — Express app with Clerk proxy + middleware wired
+- `artifacts/api-server/src/routes/` — only health.ts today; settings + monthly records routes to be added
+- `lib/db/src/schema/index.ts` — Drizzle schema (currently empty; to be populated for v2)
+- `.migration-backup/Khata_PRD.md` — full product requirements
+- `.migration-backup/Khata_DDS (1).md` — full design system specification
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- **Routing:** Switched from react-router-dom (HashRouter) to wouter — required for Clerk's auth redirects and path-based routing. All pages updated to use `useLocation` / `useSearch` / `useParams` from wouter.
+- **Auth:** Clerk (Replit-managed). Landing page at `/` shows branded login for unauthenticated users; all app routes (`/dashboard`, `/new-month`, etc.) require auth via `ProtectedRoute`. Sign-in/sign-up at `/sign-in` and `/sign-up` use Clerk's hosted components with custom Khata branding.
+- **Data storage (v1):** IndexedDB via Dexie — all data is local to the browser. The v2 migration will replace this with PostgreSQL via the Express API server.
+- **Onboarding:** Handled inside `ProtectedRoute` — if authenticated but `settings.onboarded === false`, shows the Onboarding screen regardless of route.
+- **Design tokens:** All colors, fonts, spacing defined as CSS custom properties in `artifacts/khata/src/index.css`, matching the Hisaab hackathon palette (forest green `#1B4332` primary).
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Khata is a building ledger for a 4-floor property in Karachi. The owner tracks monthly rent, utility bills (KE, SSGC, KWSB, Motor), and payment status. The app auto-calculates per-floor splits and totals, shows income vs. expense charts, and exports monthly summaries as PDF.
+
+**v2.0 additions (in progress):** Clerk login, PostgreSQL backend, user-scoped data.
 
 ## User preferences
 

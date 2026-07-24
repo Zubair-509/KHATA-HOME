@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useClerk, useUser } from '@clerk/react'
 import { db, getSettings, saveSettings } from '../lib/db'
 import { Button, Card, FormField, Input } from '../components/ui'
 
 export default function SettingsPage() {
+  const { signOut } = useClerk()
+  const { user } = useUser()
   const [form, setForm] = useState(null)
   const [saved, setSaved] = useState(false)
 
@@ -157,9 +160,24 @@ export default function SettingsPage() {
       <Card>
         <h2 className="font-display text-title-md text-primary-900 mb-2">About</h2>
         <p className="text-body-md text-neutral-700">
-          Khata — Your Building's Ledger, On the Web. Version 1.0. All data is stored locally in
-          your browser; nothing is sent to a server.
+          Khata — Your Building's Ledger, On the Web. Version 2.0.
         </p>
+      </Card>
+
+      <Card>
+        <h2 className="font-display text-title-md text-primary-900 mb-3">Account</h2>
+        {user && (
+          <p className="text-body-md text-neutral-700 mb-4">
+            Logged in as <span className="font-medium text-neutral-900">{user.fullName || user.primaryEmailAddress?.emailAddress}</span>
+          </p>
+        )}
+        <Button
+          type="button"
+          variant="danger"
+          onClick={() => signOut({ redirectUrl: '/' })}
+        >
+          Log Out
+        </Button>
       </Card>
     </div>
   )
