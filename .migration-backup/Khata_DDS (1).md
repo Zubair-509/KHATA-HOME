@@ -3,23 +3,33 @@
 | Field | Value |
 |---|---|
 | Product | Khata — Building Expense Tracker |
-| Version | 2.0 |
+| Version | 2.1 |
 | Owner | Zubair (V Core) |
 | Platform | Responsive Website (desktop-first, mobile-friendly) |
 | Target Viewport | 1280px+ primary, responsive down to 360px |
 
 ---
 
+## Changelog
+
+| Version | Date | Change |
+|---|---|---|
+| 2.0 | Initial | Dashboard-first design, forest green palette, Playfair/DM Sans/JetBrains Mono stack |
+| 2.1 | Jul 2026 | Added Login screen (Section 7.0), Logout in Settings (Section 7.7), auth loading state |
+
+---
+
 ## 1. Design Philosophy
 
-Khata is now a **website**, not a mobile-only PWA — the owner can sit at a desktop at month-end, see everything at a glance, and use real charts to understand trends. The design direction shifts to match the visual language used for the **Hisaab hackathon project**: refined utilitarian with Pakistani warmth, forest green as primary, ledger-meets-dashboard feel.
+Khata is a **website**, not a mobile-only PWA — the owner can sit at a desktop at month-end, see everything at a glance, and use real charts to understand trends. The design direction matches the visual language of the **Hisaab hackathon project**: refined utilitarian with Pakistani warmth, forest green as primary, ledger-meets-dashboard feel.
 
 ### Core Principles
 1. **Ledger meets dashboard** — the diary-style monthly summary remains the emotional core, but the Home/Dashboard is now a real analytics view with charts.
 2. **Forest green + Pakistani warmth** — matches the Hisaab hackathon palette for visual consistency across V Core's products.
-3. **Numbers are the hero** — currency amounts get a distinct typeface (Playfair Display) and tabular alignment, same as Hisaab.
+3. **Numbers are the hero** — currency amounts get a distinct typeface (Playfair Display) and tabular alignment.
 4. **Desktop-first, mobile-graceful** — layouts use a sidebar/content structure on desktop, collapsing to a stacked single-column on mobile.
-5. **Data tells a story** — charts aren't decoration; each one answers a specific question ("Is income trending up?", "Which floor costs the most?").
+5. **Data tells a story** — charts aren't decoration; each one answers a specific question.
+6. **v2.1 addition — Auth is invisible** — login is a single click; the screen is minimal and never feels like a barrier.
 
 ---
 
@@ -178,8 +188,8 @@ Currency amounts use `font-variant-numeric: tabular-nums` so columns align.
 ### 5.3 Status Badges
 Same as before — Paid (green), Pending (amber), Draft (gray). Pill shape, uppercase, 12px font.
 
-### 5.4 Tables (New — Website-Appropriate)
-History list becomes a proper data table on desktop:
+### 5.4 Tables (Website-Appropriate)
+History list as a proper data table on desktop:
 
 ```
 ┌────────────┬──────────┬──────────┬──────────┬─────────┐
@@ -194,9 +204,7 @@ History list becomes a proper data table on desktop:
 
 ---
 
-## 6. Dashboard — Charts (New Section)
-
-The Dashboard is now the most important screen after the Monthly Summary. Charts use **Recharts**.
+## 6. Dashboard — Charts
 
 ### 6.1 Income vs. Expense Trend (Line/Area Chart)
 - X-axis: last 6–12 months
@@ -222,12 +230,52 @@ The Dashboard is now the most important screen after the Monthly Summary. Charts
 
 ## 7. Screen-by-Screen Specifications
 
-### 7.1 Onboarding (First Visit)
+### 7.0 Login Screen (NEW in v2.1)
+
+This screen appears before everything else if the user is not authenticated. It is minimal — auth is one click.
+
+```
+┌──────────────────────────────────────────────────────┐
+│                                                        │
+│                                                        │
+│                   [ Khata wordmark ]                   │
+│              Your Building's Ledger, On the Web        │
+│                                                        │
+│                                                        │
+│          ┌──────────────────────────────────┐          │
+│          │                                  │          │
+│          │  Sign in to access your ledger   │          │
+│          │                                  │          │
+│          │    [ Log In ]  ← primary button  │          │
+│          │                                  │          │
+│          └──────────────────────────────────┘          │
+│                                                        │
+│                                                        │
+└──────────────────────────────────────────────────────┘
+```
+
+**Design rules:**
+- Full-page, `--color-bg-base` background
+- Center-aligned card on white, max-width 400px, radius 16px, shadow-md
+- Khata wordmark in Playfair Display, 36px, `--color-primary-900`
+- Tagline in DM Sans, 14px, `--color-neutral-500`
+- "Sign in to access your ledger" — DM Sans, 16px, `--color-neutral-700`
+- "Log In" button — Primary variant (full width within the card)
+- No "Sign Up" button or link — auth is unified; new users are registered automatically on first login
+- Loading state: "Checking your session…" spinner replaces the card while auth state is being resolved
+
+**Behaviour:**
+- Clicking "Log In" redirects to `/api/login?returnTo=/` (Replit OAuth)
+- After successful auth, user is redirected back to Dashboard
+- If already authenticated, this screen is never shown
+
+### 7.1 Onboarding (First Visit After Login)
 Single-page setup form (not a multi-step wizard, since desktop has room):
 - Tenant names (1st, 2nd floor)
 - Default rent amounts
 - SSGC / Motor split ratios
 - "Save & Continue" → Dashboard
+- Shown only once per user (tracked via `onboarded` flag in PostgreSQL settings)
 
 ### 7.2 Dashboard (Home)
 
@@ -256,29 +304,53 @@ Single-page setup form (not a multi-step wizard, since desktop has room):
 Same field structure as before (Ground → 1st → 2nd Floor cards), but laid out as a two-column form on desktop: form on the left, live-calculation summary sticky on the right.
 
 ### 7.4 Monthly Summary (Diary Replica)
-Unchanged in structure from the original DDS — still the diary-format replica — but typography updated to Playfair Display headers + JetBrains Mono amounts + forest green accents. Add a small chart at the bottom: "This Month vs Last Month" mini bar comparison.
+Unchanged in structure — still the diary-format replica — but typography updated to Playfair Display headers + JetBrains Mono amounts + forest green accents. Add a small chart at the bottom: "This Month vs Last Month" mini bar comparison.
 
 ### 7.5 History (Table View)
 Desktop: full data table (Section 5.4). Mobile: stacked cards. Filter chips for year remain.
 
 ### 7.6 Annual Summary
-Structure unchanged from v1.0, but add the 12-month bar chart (Section 6.3) at the top, before the month-by-month table.
+Structure unchanged, but add the 12-month bar chart (Section 6.3) at the top, before the month-by-month table.
 
-### 7.7 Settings
-Unchanged in content — Tenants, Default Rent, Bill Splits, Data export/clear, About.
+### 7.7 Settings (updated in v2.1)
+Content unchanged — Tenants, Default Rent, Bill Splits, Data export/clear, About.
+
+**v2.1 addition:** A "Log Out" button is added at the bottom of the Settings screen, in the Danger variant. Clicking it ends the session and returns to the Login screen. The label is simply "Log Out" — no mention of Replit or the auth provider.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Settings                                                │
+│  ...existing sections unchanged...                       │
+│  ─────────────────────────────────────────────────────  │
+│  Account                                                 │
+│  Logged in as: [user's name or email]                    │
+│  [ Log Out ]  ← Danger variant button                   │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 8. Tech Stack Additions
-- **Charting**: Recharts (composable, works well with React + Tailwind)
-- **Routing**: React Router (multi-page feel: Dashboard / New Month / History / Annual / Settings)
+## 8. Auth UX Rules (v2.1)
+
+- **Never say "Replit" or "Replit Auth"** in any user-facing text.
+- **Never show a password field** — there is none; auth is via OAuth.
+- **"Log In" / "Log Out"** are the only labels used. No "Sign Up" (new users self-register on first login).
+- The Login screen is the only unauthenticated surface. All other screens require auth.
+- Loading state (checking session) uses a centred spinner or skeleton — never a flash of unauthenticated content.
+
+---
+
+## 9. Tech Stack Additions (v2.1)
+- **Auth**: Replit OAuth + Express sessions stored in PostgreSQL
+- **ORM**: Drizzle ORM with Drizzle Kit for schema push
+- **API**: Express 5 backend serving `/api/*` routes
+- **Charting**: Recharts
+- **Routing**: React Router (multi-page feel)
 - **Layout**: Tailwind CSS grid/flex for sidebar + content structure
 
 ---
 
-## 9. Design Tokens (CSS Variables)
-
-Paste this block into the root of the app's CSS — matches Hisaab's token structure for cross-product consistency. All components reference these variables — never hardcode color or size values.
+## 10. Design Tokens (CSS Variables)
 
 ```css
 :root {
@@ -377,42 +449,22 @@ Paste this block into the root of the app's CSS — matches Hisaab's token struc
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 ```
 
-(Note: Khata doesn't need the Noto Nastaliq Urdu font that Hisaab requires — Khata's UI is English/Urdu-numeral only, no AI-generated Urdu prose.)
+---
+
+## 11. Iconography
+Lucide Icons, stroke width 1.5. Add: `TrendingUp`, `PieChart`, `BarChart3` for dashboard chart card headers. `LogOut` for the logout button in Settings.
 
 ---
 
-## 10. Iconography
-Lucide Icons, stroke width 1.5. Add: `TrendingUp`, `PieChart`, `BarChart3` for dashboard chart card headers.
+## 12. Accessibility
+Same standards as Hisaab (contrast ratios per Section 2, status via color+label+icon, tabular numerals, focus rings). Charts must include text-equivalent data (table view toggle or tooltips accessible via keyboard). Form inputs always have associated `<label>` elements. Dashboard amounts get descriptive `aria-label`s (e.g., `aria-label="Total inflow this month: 68,400 rupees"`). Login button has `aria-label="Log in to Khata"`.
 
 ---
 
-## 11. Accessibility
-Same standards as Hisaab (contrast ratios per Section 2, status via color+label+icon, tabular numerals, focus rings). Charts must include text-equivalent data (table view toggle or tooltips accessible via keyboard). Form inputs always have associated `<label>` elements. Dashboard amounts get descriptive `aria-label`s (e.g., `aria-label="Total inflow this month: 68,400 rupees"`).
+## 13. Build Order (v2.1 implementation)
 
-- Build the **Dashboard with charts first** this time — it's the new centerpiece and the biggest visual departure from v1.0.
-- Reuse the Stage 1 data layer as-is — `computeMonthTotals()` and `computeYearlyTotals()` already provide everything the charts need.
-- For the Income vs Expense trend, query `listMonths()`, take the last 6–12, map each through `computeMonthTotals()`.
-- Keep the Monthly Summary diary-replica screen — it's still valuable, just restyle it with the new palette/fonts.
-- Test responsive behavior at 1280px, 768px, and 360px breakpoints.
-
----
-
-## Next Step
-Begin **Stage 2: Dashboard UI with charts**, using the existing Stage 1 data layer. Then Settings/Onboarding, New Month Entry, Monthly Summary, History, and Annual Summary.
-
-
----
-
-## 12. Notes for the Builder (Vibe Coding Guidance)
-
-- Build the **Dashboard with charts first** — it's the new centerpiece and the biggest visual departure from v1.0.
-- Reuse the Stage 1 data layer as-is — `computeMonthTotals()` and `computeYearlyTotals()` already provide everything the charts need.
-- For the Income vs Expense trend, query `listMonths()`, take the last 6–12, map each through `computeMonthTotals()`.
-- Keep the Monthly Summary diary-replica screen — it's still valuable, just restyle it with the tokens in Section 9.
-- Test responsive behavior at 1280px, 768px, and 360px breakpoints.
-- Always reference design tokens (Section 9) — never hardcode hex values in components.
-
----
-
-## Next Step
-Begin **Stage 2: Dashboard UI with charts**, using the existing Stage 1 data layer. Then Onboarding/Settings, New Month Entry, Monthly Summary, History, and Annual Summary.
+1. **Login screen** — the new entry point; build first so the auth flow can be tested end-to-end
+2. **Settings screen update** — add Account section + Log Out button
+3. **Data layer swap** — replace IndexedDB calls with API calls (settings, monthly records)
+4. **Onboarding** — unchanged visually; only data layer changes
+5. **All other screens** — Dashboard, New Month, History, Monthly Summary, Annual — unchanged visually; only data layer changes
