@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'wouter'
+import { useNavigate } from 'react-router-dom'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -11,7 +11,7 @@ import { formatPKR, formatMonthYear, monthKey } from '../lib/format'
 import { Button, Card, StatCard, Badge } from '../components/ui'
 
 export default function Dashboard() {
-  const [, setLocation] = useLocation()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [currentTotals, setCurrentTotals] = useState(null)
   const [currentRecord, setCurrentRecord] = useState(null)
@@ -43,13 +43,13 @@ export default function Dashboard() {
   async function handleStartOrContinue() {
     const existing = await getMonthByKey(thisMonthKey)
     if (existing) {
-      setLocation(`/new-month?edit=${existing.id}`)
+      navigate(`/new-month?edit=${existing.id}`)
       return
     }
     const settings = await getSettings()
     const record = emptyMonthRecord(thisMonthKey, now.getFullYear(), settings)
     const id = await saveMonth(record)
-    setLocation(`/new-month?edit=${id}`)
+    navigate(`/new-month?edit=${id}`)
   }
 
   const hasCurrentMonth = currentRecord && currentRecord.monthYear === thisMonthKey
@@ -215,7 +215,7 @@ export default function Dashboard() {
                     <tr
                       key={m.id}
                       className="border-b border-neutral-100 h-14 hover:bg-neutral-100 cursor-pointer"
-                      onClick={() => setLocation(`/history/${m.id}`)}
+                      onClick={() => navigate(`/history/${m.id}`)}
                     >
                       <td className="font-body text-body-md">{formatMonthYear(m.monthYear)}</td>
                       <td className="font-mono text-mono-md text-inflow-text">{formatPKR(t.inflow)}</td>
@@ -240,7 +240,7 @@ export default function Dashboard() {
                   <div
                     key={m.id}
                     className="border border-neutral-300 rounded-md p-4"
-                    onClick={() => setLocation(`/history/${m.id}`)}
+                    onClick={() => navigate(`/history/${m.id}`)}
                   >
                     <div className="flex justify-between items-center mb-2">
                       <span className="font-display text-title-md text-primary-900">{formatMonthYear(m.monthYear)}</span>

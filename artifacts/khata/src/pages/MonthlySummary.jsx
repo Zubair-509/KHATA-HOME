@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useParams } from 'wouter'
+import { useNavigate, useParams } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
@@ -10,7 +10,7 @@ import { Button, Card, Badge } from '../components/ui'
 
 export default function MonthlySummary() {
   const { id } = useParams()
-  const [, setLocation] = useLocation()
+  const navigate = useNavigate()
   const [record, setRecord] = useState(null)
   const [previous, setPrevious] = useState(null)
   const [exporting, setExporting] = useState(false)
@@ -63,7 +63,7 @@ export default function MonthlySummary() {
         <h1 className="font-display text-title-xl text-primary-900">Monthly Summary</h1>
         <div className="flex gap-3">
           {record.status === 'finalized' && (
-            <Button variant="secondary" onClick={() => setLocation(`/new-month?edit=${record.id}`)}>
+            <Button variant="secondary" onClick={() => navigate(`/new-month?edit=${record.id}`)}>
               Edit (Reopen)
             </Button>
           )}

@@ -1,1 +1,0 @@
-- [Clerk + wouter setup](clerk-wouter-setup.md) — Clerk requires wouter (not react-router-dom); pnpm workspace:* protocol required for local packages.

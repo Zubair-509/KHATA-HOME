@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useLocation, useSearch } from 'wouter'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getMonth, getMonthByKey, saveMonth, emptyMonthRecord, getSettings, listMonths } from '../lib/db'
 import { computeMonthTotals } from '../lib/calculations'
 import { formatPKR, formatMonthYear, monthKey, MONTH_NAMES } from '../lib/format'
@@ -7,9 +7,9 @@ import { Button, Card } from '../components/ui'
 import EntryField from '../components/EntryField'
 
 export default function NewMonth() {
-  const [, setLocation] = useLocation()
-  const search = useSearch()
-  const editId = new URLSearchParams(search).get('edit')
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const editId = searchParams.get('edit')
 
   const [record, setRecord] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -93,7 +93,7 @@ export default function NewMonth() {
   async function handleFinalize() {
     const next = { ...record, status: 'finalized' }
     await saveMonth(next)
-    setLocation(`/history/${record.id}`)
+    navigate(`/history/${record.id}`)
   }
 
   if (loading || !record) {
