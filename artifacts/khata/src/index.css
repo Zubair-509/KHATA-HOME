@@ -48,16 +48,16 @@
   --font-body:    'DM Sans', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', monospace;
 
-  --text-display:   3rem;      /* 48px */
-  --text-title-xl:  2rem;      /* 32px */
-  --text-title-lg:  1.5rem;    /* 24px */
-  --text-title-md:  1.25rem;   /* 20px */
-  --text-body-lg:   1rem;      /* 16px */
-  --text-body-md:   0.875rem;  /* 14px */
-  --text-body-sm:   0.75rem;   /* 12px */
-  --text-label:     0.6875rem; /* 11px */
-  --text-mono-lg:   1.125rem;  /* 18px */
-  --text-mono-md:   0.875rem;  /* 14px */
+  --text-display:   3rem;
+  --text-title-xl:  2rem;
+  --text-title-lg:  1.5rem;
+  --text-title-md:  1.25rem;
+  --text-body-lg:   1rem;
+  --text-body-md:   0.875rem;
+  --text-body-sm:   0.75rem;
+  --text-label:     0.6875rem;
+  --text-mono-lg:   1.125rem;
+  --text-mono-md:   0.875rem;
 
   /* ── SPACING ── */
   --space-1:  4px;
