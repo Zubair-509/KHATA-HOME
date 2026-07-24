@@ -1,15 +1,13 @@
-# [Project name]
+# Khata
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A personal building ledger for tracking monthly rent, utility bills, and payment status across a 4-floor building in Karachi. Data is stored locally in the browser (IndexedDB via Dexie) — no backend required.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- **Frontend (main app):** Managed by the `artifacts/khata: web` workflow — runs `pnpm --filter @workspace/khata run dev` on port 21533 with `BASE_PATH=/`
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- **API server** (`artifacts/api-server`): not required for the Khata app (which is fully client-side); requires `DATABASE_URL` if started
 
 ## Stack
 
