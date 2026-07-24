@@ -11,10 +11,10 @@ paths = [ "/" ]
 localPort = 21533
 
 [services.development]
-run = "pnpm --filter @workspace/khata run dev"
+run = "npm run dev --workspace=@workspace/khata"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/khata", "run", "build" ]
+build = [ "npm", "run", "build", "--workspace=@workspace/khata" ]
 serve = "static"
 publicDir = "artifacts/khata/dist/public"
 

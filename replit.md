@@ -4,14 +4,14 @@ A personal building ledger for tracking monthly rent, utility bills, and payment
 
 ## Run & Operate
 
-- **Frontend (main app):** Managed by the `artifacts/khata: web` workflow — runs `pnpm --filter @workspace/khata run dev` on port 21533 with `BASE_PATH=/`
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
+- **Frontend (main app):** Managed by the `artifacts/khata: web` workflow — runs `npm run dev --workspace=@workspace/khata` on port 21533 with `BASE_PATH=/`
+- `npm run typecheck` — full typecheck across all packages
+- `npm run build` — typecheck + build all packages
 - **API server** (`artifacts/api-server`): not required for the Khata app (which is fully client-side); requires `DATABASE_URL` if started
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
+- npm workspaces, Node.js 20, TypeScript 5.9
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
