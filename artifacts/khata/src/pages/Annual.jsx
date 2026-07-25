@@ -25,11 +25,17 @@ export default function Annual() {
 
   useEffect(() => {
     if (year == null) return
+    let cancelled = false
     async function load() {
-      const result = await computeYearlyTotals(year)
-      setData(result)
+      try {
+        const result = await computeYearlyTotals(year)
+        if (!cancelled) setData(result)
+      } catch (err) {
+        console.error('Failed to load annual data:', err)
+      }
     }
     load()
+    return () => { cancelled = true }
   }, [year])
 
   async function handleExportPdf() {

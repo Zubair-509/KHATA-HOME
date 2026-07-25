@@ -74,7 +74,7 @@ export function computeMonthTotals(record) {
   pushPending('2nd Floor', 'Rent', secondFloor.rentReceived)
   pushPending('2nd Floor', 'SSGC Share', secondFloor.ssgcShareReceived)
   pushPending('2nd Floor', 'Motor Share', secondFloor.motorShareReceived)
-  pushPending('2nd Floor', 'KE (paid by owner)', secondFloor.keReceived)
+  pushPending('2nd Floor', 'KE Reimbursement', secondFloor.keReceived)
 
   // Per-floor expense breakdown (DDS 6.2)
   const groundTotal = amt(groundFloor.ke) + amt(groundFloor.kwsb) + amt(groundFloor.ssgcTotal) + amt(groundFloor.motorTotal)

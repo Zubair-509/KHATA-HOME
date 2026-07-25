@@ -17,58 +17,63 @@ export default function NewMonth() {
 
   useEffect(() => {
     async function load() {
-      if (editId) {
-        // editId is a UUID string (not an integer)
-        const existing = await getMonth(editId)
-        if (existing) {
-          setRecord(existing)
+      try {
+        if (editId) {
+          // editId is a UUID string (not an integer)
+          const existing = await getMonth(editId)
+          if (existing) {
+            setRecord(existing)
+            setLoading(false)
+            return
+          }
+        }
+
+        // No edit id — create a fresh draft for the current month, pre-filled
+        // from the most recent month's values (FR-2.4) and current settings.
+        const now = new Date()
+        const key = monthKey(now.getFullYear(), now.getMonth())
+        const existingForKey = await getMonthByKey(key)
+        if (existingForKey) {
+          setRecord(existingForKey)
           setLoading(false)
           return
         }
-      }
 
-      // No edit id — create a fresh draft for the current month, pre-filled
-      // from the most recent month's values (FR-2.4) and current settings.
-      const now = new Date()
-      const key = monthKey(now.getFullYear(), now.getMonth())
-      const existingForKey = await getMonthByKey(key)
-      if (existingForKey) {
-        setRecord(existingForKey)
+        const s = await getSettings()
+        const fresh = emptyMonthRecord(key, now.getFullYear(), s)
+
+        const previous = (await listMonths())[0]
+        if (previous) {
+          // Pre-fill amounts from previous month, reset status to pending and clear dates
+          const carry = (entry) => ({ amount: entry.amount, status: 'pending', date: null, receiptImageRef: null })
+          fresh.groundFloor = {
+            ke: carry(previous.groundFloor.ke),
+            kwsb: carry(previous.groundFloor.kwsb),
+            ssgcTotal: carry(previous.groundFloor.ssgcTotal),
+            motorTotal: carry(previous.groundFloor.motorTotal),
+          }
+          fresh.firstFloor = {
+            ke: carry(previous.firstFloor.ke),
+            rentReceived: carry(previous.firstFloor.rentReceived),
+            ssgcShareReceived: carry(previous.firstFloor.ssgcShareReceived),
+            motorShareReceived: carry(previous.firstFloor.motorShareReceived),
+          }
+          fresh.secondFloor = {
+            ke: carry(previous.secondFloor.ke),
+            rentReceived: carry(previous.secondFloor.rentReceived),
+            ssgcShareReceived: carry(previous.secondFloor.ssgcShareReceived),
+            motorShareReceived: carry(previous.secondFloor.motorShareReceived),
+            keReceived: carry(previous.secondFloor.keReceived),
+          }
+        }
+
+        const id = await saveMonth(fresh)
+        setRecord({ ...fresh, id })
         setLoading(false)
-        return
+      } catch (err) {
+        console.error('Failed to load month entry:', err)
+        setLoading(false)
       }
-
-      const s = await getSettings()
-      const fresh = emptyMonthRecord(key, now.getFullYear(), s)
-
-      const previous = (await listMonths())[0]
-      if (previous) {
-        // Pre-fill amounts from previous month, reset status to pending and clear dates
-        const carry = (entry) => ({ amount: entry.amount, status: 'pending', date: null, receiptImageRef: null })
-        fresh.groundFloor = {
-          ke: carry(previous.groundFloor.ke),
-          kwsb: carry(previous.groundFloor.kwsb),
-          ssgcTotal: carry(previous.groundFloor.ssgcTotal),
-          motorTotal: carry(previous.groundFloor.motorTotal),
-        }
-        fresh.firstFloor = {
-          ke: carry(previous.firstFloor.ke),
-          rentReceived: carry(previous.firstFloor.rentReceived),
-          ssgcShareReceived: carry(previous.firstFloor.ssgcShareReceived),
-          motorShareReceived: carry(previous.firstFloor.motorShareReceived),
-        }
-        fresh.secondFloor = {
-          ke: carry(previous.secondFloor.ke),
-          rentReceived: carry(previous.secondFloor.rentReceived),
-          ssgcShareReceived: carry(previous.secondFloor.ssgcShareReceived),
-          motorShareReceived: carry(previous.secondFloor.motorShareReceived),
-          keReceived: carry(previous.secondFloor.keReceived),
-        }
-      }
-
-      const id = await saveMonth(fresh)
-      setRecord({ ...fresh, id })
-      setLoading(false)
     }
     load()
   }, [editId])
@@ -76,19 +81,24 @@ export default function NewMonth() {
   // Auto-save on every change (FR-2.8 / Reliability requirement)
   const persist = useCallback(async (next) => {
     setSaveState('saving')
-    await saveMonth(next)
-    setSaveState('saved')
+    try {
+      await saveMonth(next)
+      setSaveState('saved')
+    } catch (err) {
+      console.error('Auto-save failed:', err)
+      setSaveState('idle')
+    }
   }, [])
 
+  // Compute next state outside the setter to avoid triggering side-effects
+  // inside a pure React state updater function.
   function updateFloor(floorKey, fieldKey, value) {
-    setRecord((prev) => {
-      const next = {
-        ...prev,
-        [floorKey]: { ...prev[floorKey], [fieldKey]: value },
-      }
-      persist(next)
-      return next
-    })
+    const next = {
+      ...record,
+      [floorKey]: { ...record[floorKey], [fieldKey]: value },
+    }
+    setRecord(next)
+    persist(next)
   }
 
   async function handleFinalize() {

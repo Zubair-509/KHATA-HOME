@@ -11,20 +11,22 @@ export default function SettingsPage() {
   const [clearing, setClearing] = useState(false)
 
   useEffect(() => {
-    getSettings().then((s) =>
-      setForm({
-        tenant1stFloorName: s.tenant1stFloorName,
-        tenant2ndFloorName: s.tenant2ndFloorName,
-        defaultRent1st: s.defaultRent1st,
-        defaultRent2nd: s.defaultRent2nd,
-        ssgcGround: s.ssgcSplitRatio.ground,
-        ssgcFirst: s.ssgcSplitRatio.first,
-        ssgcSecond: s.ssgcSplitRatio.second,
-        motorGround: s.motorSplitRatio.ground,
-        motorFirst: s.motorSplitRatio.first,
-        motorSecond: s.motorSplitRatio.second,
-      })
-    )
+    getSettings()
+      .then((s) =>
+        setForm({
+          tenant1stFloorName: s.tenant1stFloorName,
+          tenant2ndFloorName: s.tenant2ndFloorName,
+          defaultRent1st: s.defaultRent1st,
+          defaultRent2nd: s.defaultRent2nd,
+          ssgcGround: s.ssgcSplitRatio.ground,
+          ssgcFirst: s.ssgcSplitRatio.first,
+          ssgcSecond: s.ssgcSplitRatio.second,
+          motorGround: s.motorSplitRatio.ground,
+          motorFirst: s.motorSplitRatio.first,
+          motorSecond: s.motorSplitRatio.second,
+        })
+      )
+      .catch((err) => console.error('Failed to load settings:', err))
   }, [])
 
   function update(field, value) {

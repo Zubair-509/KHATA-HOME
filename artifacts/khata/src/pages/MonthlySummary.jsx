@@ -12,18 +12,28 @@ export default function MonthlySummary() {
   const { id } = useParams() // UUID string
   const navigate = useNavigate()
   const [record, setRecord] = useState(null)
+  const [notFound, setNotFound] = useState(false)
   const [previous, setPrevious] = useState(null)
   const [exporting, setExporting] = useState(false)
   const printRef = useRef(null)
 
   useEffect(() => {
+    setRecord(null)
+    setNotFound(false)
     async function load() {
-      const rec = await getMonth(id) // id is already a UUID string
-      setRecord(rec)
-      if (rec) {
+      try {
+        const rec = await getMonth(id) // id is already a UUID string
+        if (!rec) {
+          setNotFound(true)
+          return
+        }
+        setRecord(rec)
         const months = await listMonths()
         const idx = months.findIndex((m) => m.id === rec.id)
         setPrevious(months[idx + 1] || null)
+      } catch (err) {
+        console.error('Failed to load monthly summary:', err)
+        setNotFound(true)
       }
     }
     load()
@@ -43,6 +53,7 @@ export default function MonthlySummary() {
     }
   }
 
+  if (notFound) return <p className="text-neutral-500">Record not found.</p>
   if (!record) return <p className="text-neutral-500">Loading…</p>
 
   const totals = computeMonthTotals(record)

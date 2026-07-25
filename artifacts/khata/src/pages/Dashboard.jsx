@@ -23,33 +23,41 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function load() {
-      const months = await listMonths() // newest first
-      setRecentMonths(months.slice(0, 6))
+      try {
+        const months = await listMonths() // newest first
+        setRecentMonths(months.slice(0, 6))
 
-      const current = months[0]
-      if (current) {
-        setCurrentRecord(current)
-        setCurrentTotals(computeMonthTotals(current))
+        const current = months[0]
+        if (current) {
+          setCurrentRecord(current)
+          setCurrentTotals(computeMonthTotals(current))
+        }
+
+        const trendData = await getRecentMonthsTrend(6)
+        setTrend(trendData.map((m) => ({ ...m, label: formatMonthYear(m.monthYear) })))
+      } catch (err) {
+        console.error('Failed to load dashboard:', err)
+      } finally {
+        setLoading(false)
       }
-
-      const trendData = await getRecentMonthsTrend(6)
-      setTrend(trendData.map((m) => ({ ...m, label: formatMonthYear(m.monthYear) })))
-
-      setLoading(false)
     }
     load()
   }, [])
 
   async function handleStartOrContinue() {
-    const existing = await getMonthByKey(thisMonthKey)
-    if (existing) {
-      navigate(`/new-month?edit=${existing.id}`)
-      return
+    try {
+      const existing = await getMonthByKey(thisMonthKey)
+      if (existing) {
+        navigate(`/new-month?edit=${existing.id}`)
+        return
+      }
+      const s = await getSettings()
+      const record = emptyMonthRecord(thisMonthKey, now.getFullYear(), s)
+      const id = await saveMonth(record)
+      navigate(`/new-month?edit=${id}`)
+    } catch (err) {
+      console.error('Failed to start month:', err)
     }
-    const s = await getSettings()
-    const record = emptyMonthRecord(thisMonthKey, now.getFullYear(), s)
-    const id = await saveMonth(record)
-    navigate(`/new-month?edit=${id}`)
   }
 
   const hasCurrentMonth = currentRecord && currentRecord.monthYear === thisMonthKey

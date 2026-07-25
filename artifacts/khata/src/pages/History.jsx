@@ -13,9 +13,13 @@ export default function HistoryPage() {
 
   useEffect(() => {
     async function load() {
-      const [m, y] = await Promise.all([listMonths(), listYears()])
-      setMonths(m)
-      setYears(y)
+      try {
+        const [m, y] = await Promise.all([listMonths(), listYears()])
+        setMonths(m)
+        setYears(y)
+      } catch (err) {
+        console.error('Failed to load history:', err)
+      }
     }
     load()
   }, [])
