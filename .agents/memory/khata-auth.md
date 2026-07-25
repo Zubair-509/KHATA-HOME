@@ -1,6 +1,6 @@
 ---
 name: Khata auth setup
-description: Clerk auth integration details, entry-point decisions, and routing conventions for the Khata app.
+description: Clerk auth integration details, entry-point decisions, routing conventions, and database setup for the Khata app.
 ---
 
 # Khata Clerk Auth Setup
@@ -36,3 +36,35 @@ Used in App.jsx (JSX, not TSX) — works fine.
 
 ## Pre-existing Dexie bug
 `ConstraintError: Unable to add key to index 'monthYear'` appears in console when attempting to create a duplicate monthly record. This is a pre-existing app bug unrelated to auth.
+
+## Clerk management status
+Replit-managed Clerk (`app_3GzrWfTlOyDw3QkKi9DZIGcGhzl`). Secrets auto-provisioned:
+- `CLERK_SECRET_KEY` — used by api-server requireAuth middleware
+- `CLERK_PUBLISHABLE_KEY` — used by api-server clerkMiddleware
+- `VITE_CLERK_PUBLISHABLE_KEY` — used by khata frontend
+The dev console warning "Loaded with development keys" is expected and normal.
+
+## PostgreSQL schema (fully applied)
+All 4 tables created and live in development DB:
+- `users` — synced from Clerk on first API call (by requireAuth middleware)
+- `settings` — one row per user, FK → users.id
+- `monthly_records` — one per user per month, unique(user_id, month_year)
+- `receipts` — one per bill entry per record, stores base64 image_data
+
+Schema source: `lib/db/src/schema/index.ts` (Drizzle ORM definitions)
+
+## Data layer — FULLY MIGRATED
+All frontend pages import from `artifacts/khata/src/lib/api.js` (API client, not Dexie).
+`artifacts/khata/src/lib/db.js` (Dexie) still exists as dead code — safe to remove later.
+`artifacts/khata/src/lib/calculations.js` imports from `./api` (migrated).
+`artifacts/khata/src/components/EntryField.jsx` imports from `../lib/api` (migrated).
+
+## Running services
+- `artifacts/khata: web` — Vite dev server, PORT 21533, path `/`
+- `artifacts/api-server: API Server` — Express on PORT 8080, path `/api`
+  - Dev script: `export NODE_ENV=development && npm run build && npm run start`
+  - esbuild build succeeds (binary available via npx)
+
+## API server Clerk proxy
+`/api/__clerk` — proxies Clerk Frontend API in production only (no-op in dev).
+`VITE_CLERK_PROXY_URL` is empty in dev (intentional); auto-populated in prod by Replit.

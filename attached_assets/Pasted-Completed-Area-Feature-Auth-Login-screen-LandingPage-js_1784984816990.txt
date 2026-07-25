@@ -1,0 +1,26 @@
+Completed
+Area	Feature
+Auth	Login screen (LandingPage.jsx) — Clerk sign-in/sign-up, branded UI
+Auth	Session-based protection on all app routes
+Auth	Logout in Settings (FR-0.4)
+Onboarding	First-launch setup wizard — tenant names, rent, SSGC/Motor splits (FR-1.1)
+Settings	Editable anytime; onboarded flag tracked (FR-1.2, FR-1.3)
+New Month	Full form — Ground → 1st → 2nd floor, Paid/Pending/Date per field (FR-2.1–2.6, 2.8)
+New Month	Receipt photo attachment per entry stored in IndexedDB (FR-2.7)
+Calculations	All live auto-calculations — SSGC/Motor splits, floor totals, inflow/outflow/net (FR-3.1–3.8)
+Dashboard	Stat cards (inflow, outflow, net, pending) + Area chart + Pie chart (FR-4.5–4.7)
+Monthly Summary	Diary-format replica with status badges and floor arithmetic display (FR-4.1–4.4)
+History	Scrollable list sorted newest-first with inflow/outflow/pending indicator (FR-5.1–5.3)
+Annual Summary	12-month bar chart + year totals table + PDF export (FR-5.5–5.7, FR-6.1–6.3)
+Reminders	In-app pending banner (FR-7.1)
+Design	Forest green palette, Playfair Display / DM Sans / JetBrains Mono type stack, sidebar layout
+❌ Not Yet Done (the entire v2.0 data layer migration)
+Area	What's Missing	PRD Ref
+Database	Drizzle schema is an empty placeholder — no tables defined	FR-1.6, FR-2.9, §7
+API Server	Only a health-check route exists — no CRUD endpoints for settings or records	DDS §9
+API Server	No database connection wired up in app.ts	—
+Data layer	All data still reads/writes IndexedDB (Dexie) — no API calls in the frontend	FR-1.6, FR-2.9
+User scoping	No userId attached to any record — data is not isolated per user	FR-0.5, FR-0.6
+Cross-device	Data is browser-local; switching devices or clearing storage loses everything	PRD §2
+Auth note	PRD/DDS spec Replit OAuth, but code uses Clerk — functionally better, but a deviation	FR-0.2
+In short: The entire UI is built and polished. The v2.0 migration — swap IndexedDB for PostgreSQL, build the API routes, migrate the frontend data layer — is the one remaining chunk of work, and it's the biggest one
