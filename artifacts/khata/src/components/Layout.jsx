@@ -2,7 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { LayoutDashboard, PlusCircle, History, BarChart3, Settings } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Home', icon: LayoutDashboard, end: true },
+  { to: '/dashboard', label: 'Home', icon: LayoutDashboard },
   { to: '/new-month', label: 'New Month', icon: PlusCircle },
   { to: '/history', label: 'History', icon: History },
   { to: '/annual', label: 'Annual', icon: BarChart3 },

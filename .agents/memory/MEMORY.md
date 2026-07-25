@@ -1,0 +1,1 @@
+- [Khata auth setup](khata-auth.md) — Clerk auth wired with BrowserRouter (not HashRouter); important routing and entry-point decisions.
