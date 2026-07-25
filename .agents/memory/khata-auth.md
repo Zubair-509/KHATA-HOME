@@ -7,10 +7,8 @@ description: Clerk auth integration details, entry-point decisions, routing conv
 
 ## Entry point
 `index.html` loads `src/main.jsx` → `src/App.jsx` (explicit `.jsx` extension in the import).
-`src/main.tsx` and `src/App.tsx` also exist but are NOT used — `index.html` hard-references `main.jsx`.
+`src/main.tsx` and `src/App.tsx` have been deleted — they were dead code.
 All auth and routing changes belong in `App.jsx`.
-
-**Why:** `main.tsx` imports `App` without extension (picks up `App.tsx`), but the HTML entry point bypasses it.
 
 ## HashRouter → BrowserRouter
 Switched from `HashRouter` to `BrowserRouter` for Clerk auth to work.
@@ -34,30 +32,33 @@ The app uses Tailwind v3 (PostCSS), NOT v4. Do NOT add `cssLayerName: "clerk"` t
 Import path: `import { publishableKeyFromHost } from '@clerk/react/internal'`
 Used in App.jsx (JSX, not TSX) — works fine.
 
-## Pre-existing Dexie bug
-`ConstraintError: Unable to add key to index 'monthYear'` appears in console when attempting to create a duplicate monthly record. This is a pre-existing app bug unrelated to auth.
+## ProtectedLayout null guard
+`useSettings()` returns `undefined` while loading and `null` on API error.
+The guard must be `settings == null` (loose equality), NOT `settings === undefined`.
+Using strict equality lets `null` through and causes `Cannot read properties of null (reading 'onboarded')`.
 
 ## Clerk management status
-Replit-managed Clerk (`app_3GzrWfTlOyDw3QkKi9DZIGcGhzl`). Secrets auto-provisioned:
+Replit-managed Clerk. Secrets auto-provisioned:
 - `CLERK_SECRET_KEY` — used by api-server requireAuth middleware
 - `CLERK_PUBLISHABLE_KEY` — used by api-server clerkMiddleware
 - `VITE_CLERK_PUBLISHABLE_KEY` — used by khata frontend
 The dev console warning "Loaded with development keys" is expected and normal.
 
-## PostgreSQL schema (fully applied)
-All 4 tables created and live in development DB:
+**Re-import note:** After re-importing from GitHub, Clerk is `not_configured`. Must call `setupClerkWhitelabelAuth()` and restart both workflows to re-provision.
+
+## PostgreSQL schema
+All 4 tables in development DB:
 - `users` — synced from Clerk on first API call (by requireAuth middleware)
 - `settings` — one row per user, FK → users.id
 - `monthly_records` — one per user per month, unique(user_id, month_year)
 - `receipts` — one per bill entry per record, stores base64 image_data
 
 Schema source: `lib/db/src/schema/index.ts` (Drizzle ORM definitions)
+**To apply after re-import:** `pnpm --filter @workspace/db run push`
 
 ## Data layer — FULLY MIGRATED
 All frontend pages import from `artifacts/khata/src/lib/api.js` (API client, not Dexie).
-`artifacts/khata/src/lib/db.js` (Dexie) still exists as dead code — safe to remove later.
-`artifacts/khata/src/lib/calculations.js` imports from `./api` (migrated).
-`artifacts/khata/src/components/EntryField.jsx` imports from `../lib/api` (migrated).
+`artifacts/khata/src/lib/db.js` (Dexie) has been deleted.
 
 ## Running services
 - `artifacts/khata: web` — Vite dev server, PORT 21533, path `/`

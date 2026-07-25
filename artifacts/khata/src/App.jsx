@@ -106,7 +106,7 @@ function ProtectedLayout() {
   const { isSignedIn, isLoaded } = useAuth()
   const settings = useSettings()
 
-  if (!isLoaded || settings === undefined) return <LoadingScreen />
+  if (!isLoaded || settings == null) return <LoadingScreen />
   if (!isSignedIn) return <Navigate to="/sign-in" replace />
   if (!settings.onboarded) return <Onboarding />
 
