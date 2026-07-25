@@ -3,13 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import { getMonth, listMonths } from '../lib/db'
+import { getMonth, listMonths } from '../lib/api'
 import { computeMonthTotals } from '../lib/calculations'
 import { formatPKR, MONTH_NAMES } from '../lib/format'
 import { Button, Card, Badge } from '../components/ui'
 
 export default function MonthlySummary() {
-  const { id } = useParams()
+  const { id } = useParams() // UUID string
   const navigate = useNavigate()
   const [record, setRecord] = useState(null)
   const [previous, setPrevious] = useState(null)
@@ -18,7 +18,7 @@ export default function MonthlySummary() {
 
   useEffect(() => {
     async function load() {
-      const rec = await getMonth(Number(id))
+      const rec = await getMonth(id) // id is already a UUID string
       setRecord(rec)
       if (rec) {
         const months = await listMonths()

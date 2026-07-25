@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Camera, X } from 'lucide-react'
-import { getReceipt, saveReceipt, deleteReceipt } from '../lib/db'
+import { getReceipt, saveReceipt, deleteReceipt } from '../lib/api'
 import { Input, Select } from './ui'
 
 /**
@@ -11,27 +11,24 @@ import { Input, Select } from './ui'
  *   label      – field label shown to the user
  *   value      – { amount, status, date, receiptImageRef }
  *   onChange   – (newValue) => void
- *   recordId   – (optional) parent month record id, required for receipt storage
+ *   recordId   – (optional) parent month record UUID, required for receipt storage
  *   fieldRef   – (optional) stable key for this entry, e.g. "groundFloor.ke"
  */
 export default function EntryField({ label, value, onChange, recordId, fieldRef }) {
   const fileInputRef = useRef(null)
-  const [previewUrl, setPreviewUrl] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null) // data URL or null
   const [viewing, setViewing] = useState(false)
 
-  // Load existing receipt from IndexedDB when recordId/fieldRef are known
+  // Load existing receipt from the API when recordId/fieldRef are known
   useEffect(() => {
     if (!recordId || !fieldRef) return
-    let objectUrl = null
+    let cancelled = false
     getReceipt(recordId, fieldRef).then((rec) => {
-      if (rec?.imageBlob) {
-        objectUrl = URL.createObjectURL(rec.imageBlob)
-        setPreviewUrl(objectUrl)
+      if (!cancelled && rec?.imageData) {
+        setPreviewUrl(rec.imageData) // already a data URL
       }
     })
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
-    }
+    return () => { cancelled = true }
   }, [recordId, fieldRef])
 
   function set(patch) {
@@ -42,18 +39,17 @@ export default function EntryField({ label, value, onChange, recordId, fieldRef 
     const file = e.target.files?.[0]
     if (!file || !recordId || !fieldRef) return
     await saveReceipt(recordId, fieldRef, file)
-    // Revoke previous URL before creating a new one
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
-    setPreviewUrl(URL.createObjectURL(file))
+    // Show a local preview immediately without waiting for re-fetch
+    const reader = new FileReader()
+    reader.onload = () => setPreviewUrl(reader.result)
+    reader.readAsDataURL(file)
     onChange({ ...value, receiptImageRef: fieldRef })
-    // Reset file input so the same file can be re-selected after deletion
-    e.target.value = ''
+    e.target.value = '' // reset so the same file can be re-selected
   }
 
   async function handleDelete() {
     if (!recordId || !fieldRef) return
     await deleteReceipt(recordId, fieldRef)
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
     setPreviewUrl(null)
     onChange({ ...value, receiptImageRef: null })
   }
@@ -135,7 +131,7 @@ export default function EntryField({ label, value, onChange, recordId, fieldRef 
               </button>
             )}
 
-            {/* Hidden file input — capture="environment" opens the camera on mobile */}
+            {/* Hidden file input — capture="environment" opens camera on mobile */}
             <input
               ref={fileInputRef}
               type="file"

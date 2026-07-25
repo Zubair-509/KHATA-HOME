@@ -5,7 +5,7 @@ import {
   PieChart, Pie, Cell, Legend,
 } from 'recharts'
 import { TrendingUp, PieChart as PieIcon, AlertTriangle } from 'lucide-react'
-import { listMonths, getMonthByKey, saveMonth, emptyMonthRecord, getSettings } from '../lib/db'
+import { listMonths, getMonthByKey, saveMonth, emptyMonthRecord, getSettings } from '../lib/api'
 import { computeMonthTotals, getRecentMonthsTrend } from '../lib/calculations'
 import { formatPKR, formatMonthYear, monthKey } from '../lib/format'
 import { Button, Card, StatCard, Badge } from '../components/ui'
@@ -46,8 +46,8 @@ export default function Dashboard() {
       navigate(`/new-month?edit=${existing.id}`)
       return
     }
-    const settings = await getSettings()
-    const record = emptyMonthRecord(thisMonthKey, now.getFullYear(), settings)
+    const s = await getSettings()
+    const record = emptyMonthRecord(thisMonthKey, now.getFullYear(), s)
     const id = await saveMonth(record)
     navigate(`/new-month?edit=${id}`)
   }
@@ -239,7 +239,7 @@ export default function Dashboard() {
                 return (
                   <div
                     key={m.id}
-                    className="border border-neutral-300 rounded-md p-4"
+                    className="border border-neutral-300 rounded-md p-4 cursor-pointer"
                     onClick={() => navigate(`/history/${m.id}`)}
                   >
                     <div className="flex justify-between items-center mb-2">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useClerk, useUser } from '@clerk/react'
-import { db, getSettings, saveSettings } from '../lib/db'
+import { getSettings, saveSettings, exportAllData } from '../lib/api'
 import { Button, Card, FormField, Input } from '../components/ui'
 
 export default function SettingsPage() {
@@ -8,20 +8,21 @@ export default function SettingsPage() {
   const { user } = useUser()
   const [form, setForm] = useState(null)
   const [saved, setSaved] = useState(false)
+  const [clearing, setClearing] = useState(false)
 
   useEffect(() => {
-    getSettings().then((settings) =>
+    getSettings().then((s) =>
       setForm({
-        tenant1stFloorName: settings.tenant1stFloorName,
-        tenant2ndFloorName: settings.tenant2ndFloorName,
-        defaultRent1st: settings.defaultRent1st,
-        defaultRent2nd: settings.defaultRent2nd,
-        ssgcGround: settings.ssgcSplitRatio.ground,
-        ssgcFirst: settings.ssgcSplitRatio.first,
-        ssgcSecond: settings.ssgcSplitRatio.second,
-        motorGround: settings.motorSplitRatio.ground,
-        motorFirst: settings.motorSplitRatio.first,
-        motorSecond: settings.motorSplitRatio.second,
+        tenant1stFloorName: s.tenant1stFloorName,
+        tenant2ndFloorName: s.tenant2ndFloorName,
+        defaultRent1st: s.defaultRent1st,
+        defaultRent2nd: s.defaultRent2nd,
+        ssgcGround: s.ssgcSplitRatio.ground,
+        ssgcFirst: s.ssgcSplitRatio.first,
+        ssgcSecond: s.ssgcSplitRatio.second,
+        motorGround: s.motorSplitRatio.ground,
+        motorFirst: s.motorSplitRatio.first,
+        motorSecond: s.motorSplitRatio.second,
       })
     )
   }, [])
@@ -54,27 +55,31 @@ export default function SettingsPage() {
   }
 
   async function handleExport() {
-    const [settings, months, receipts] = await Promise.all([
-      db.settings.toArray(),
-      db.months.toArray(),
-      db.receipts.toArray(),
-    ])
-    const data = { settings, months, receipts, exportedAt: new Date().toISOString() }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `khata-export-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    await exportAllData()
   }
 
   async function handleClearData() {
-    if (!window.confirm('This will permanently delete all months, receipts, and settings. Continue?')) return
-    await db.months.clear()
-    await db.receipts.clear()
-    await db.settings.clear()
-    window.location.reload()
+    if (!window.confirm('This will permanently delete ALL your months, receipts, and settings. This cannot be undone. Continue?')) return
+    setClearing(true)
+    try {
+      // Delete all records via API (receipts cascade); then reset settings
+      const { listMonths, deleteMonth, saveSettings: resetSettings } = await import('../lib/api')
+      const months = await listMonths()
+      await Promise.all(months.map((m) => deleteMonth(m.id)))
+      await resetSettings({
+        tenant1stFloorName: '1st Floor Tenant',
+        tenant2ndFloorName: '2nd Floor Tenant',
+        defaultRent1st: 22000,
+        defaultRent2nd: 22000,
+        ssgcSplitRatio: { ground: 1, first: 1, second: 1 },
+        motorSplitRatio: { ground: 1, first: 1, second: 1 },
+        onboarded: false,
+      })
+      window.location.href = '/'
+    } catch (err) {
+      alert('Failed to clear data. Please try again.')
+      setClearing(false)
+    }
   }
 
   if (!form) return <p className="text-neutral-500">Loading…</p>
@@ -151,8 +156,8 @@ export default function SettingsPage() {
           <Button type="button" variant="secondary" onClick={handleExport}>
             Export All Data (JSON)
           </Button>
-          <Button type="button" variant="danger" onClick={handleClearData}>
-            Clear All Data
+          <Button type="button" variant="danger" onClick={handleClearData} disabled={clearing}>
+            {clearing ? 'Clearing…' : 'Clear All Data'}
           </Button>
         </div>
       </Card>
@@ -160,8 +165,8 @@ export default function SettingsPage() {
       <Card>
         <h2 className="font-display text-title-md text-primary-900 mb-2">About</h2>
         <p className="text-body-md text-neutral-700">
-          Khata — Your Building's Ledger, On the Web. Version 2.0. All data is stored locally in
-          your browser.
+          Khata — Your Building's Ledger, On the Web. Version 2.0. All data is stored securely
+          in PostgreSQL, accessible from any device after signing in.
         </p>
       </Card>
 

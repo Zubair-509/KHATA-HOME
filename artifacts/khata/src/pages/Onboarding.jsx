@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { saveSettings, DEFAULT_SETTINGS } from '../lib/db'
+import { saveSettings, DEFAULT_SETTINGS } from '../lib/api'
 import { Button, FormField, Input } from '../components/ui'
 
 export default function Onboarding() {
@@ -41,7 +41,8 @@ export default function Onboarding() {
       },
       onboarded: true,
     })
-    setSaving(false)
+    // Full reload so ProtectedLayout re-fetches settings and sees onboarded: true
+    window.location.href = '/'
   }
 
   return (

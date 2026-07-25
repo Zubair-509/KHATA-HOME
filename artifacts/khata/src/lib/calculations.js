@@ -1,4 +1,5 @@
-import { listMonths, listMonthsByYear } from './db'
+// Data-fetching imports now point to the API client instead of Dexie.
+import { listMonths, listMonthsByYear } from './api'
 
 function ratioShare(total, ratio, floor) {
   const sum = (ratio.ground || 0) + (ratio.first || 0) + (ratio.second || 0)
@@ -31,11 +32,11 @@ export function computeMonthTotals(record) {
     second: ratioShare(amt(groundFloor.motorTotal), snapshot.splits.motor, 'second'),
   }
 
-  // FR-3.3 / FR-3.4 — expected floor totals (what each tenant owes this month)
+  // FR-3.3 / FR-3.4 — expected floor totals
   const firstFloorTotal = snapshot.rents.first + amt(firstFloor.ke) + ssgcShare.first + motorShare.first
   const secondFloorTotal = snapshot.rents.second + amt(secondFloor.ke) + ssgcShare.second + motorShare.second
 
-  // FR-3.5 — Owner Inflow = sum of amounts actually received (Paid) from tenants
+  // FR-3.5 — Owner Inflow = amounts actually received (Paid) from tenants
   const inflowEntries = [
     firstFloor.rentReceived,
     firstFloor.ssgcShareReceived,
@@ -75,7 +76,7 @@ export function computeMonthTotals(record) {
   pushPending('2nd Floor', 'Motor Share', secondFloor.motorShareReceived)
   pushPending('2nd Floor', 'KE (paid by owner)', secondFloor.keReceived)
 
-  // Per-floor expense breakdown (DDS 6.2): Ground = owner outflow, plus floor totals
+  // Per-floor expense breakdown (DDS 6.2)
   const groundTotal = amt(groundFloor.ke) + amt(groundFloor.kwsb) + amt(groundFloor.ssgcTotal) + amt(groundFloor.motorTotal)
 
   return {
@@ -101,10 +102,7 @@ export async function computeYearlyTotals(year) {
 
   const monthly = months.map((record) => {
     const totals = computeMonthTotals(record)
-    return {
-      monthYear: record.monthYear,
-      ...totals,
-    }
+    return { monthYear: record.monthYear, ...totals }
   })
 
   const totals = monthly.reduce(
@@ -113,10 +111,9 @@ export async function computeYearlyTotals(year) {
       outflow: acc.outflow + m.outflow,
       net: acc.net + m.net,
     }),
-    { inflow: 0, outflow: 0, net: 0 }
+    { inflow: 0, outflow: 0, net: 0 },
   )
 
-  // Per-floor yearly totals (FR-5.6)
   const perFloor = months.reduce(
     (acc, record) => {
       const t = computeMonthTotals(record)
@@ -125,7 +122,7 @@ export async function computeYearlyTotals(year) {
       acc.groundTotal += t.groundTotal
       return acc
     },
-    { firstFloorTotal: 0, secondFloorTotal: 0, groundTotal: 0 }
+    { firstFloorTotal: 0, secondFloorTotal: 0, groundTotal: 0 },
   )
 
   return { year, monthly, totals, perFloor }

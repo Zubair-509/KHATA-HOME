@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { listMonths, listYears } from '../lib/db'
+import { listMonths, listYears } from '../lib/api'
 import { computeMonthTotals } from '../lib/calculations'
 import { formatPKR, formatMonthYear } from '../lib/format'
 import { Card, Badge } from '../components/ui'
@@ -13,8 +13,9 @@ export default function HistoryPage() {
 
   useEffect(() => {
     async function load() {
-      setMonths(await listMonths())
-      setYears(await listYears())
+      const [m, y] = await Promise.all([listMonths(), listYears()])
+      setMonths(m)
+      setYears(y)
     }
     load()
   }, [])

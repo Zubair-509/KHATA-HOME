@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { getMonth, getMonthByKey, saveMonth, emptyMonthRecord, getSettings, listMonths } from '../lib/db'
+import { getMonth, getMonthByKey, saveMonth, emptyMonthRecord, getSettings, listMonths } from '../lib/api'
 import { computeMonthTotals } from '../lib/calculations'
 import { formatPKR, formatMonthYear, monthKey, MONTH_NAMES } from '../lib/format'
 import { Button, Card } from '../components/ui'
@@ -18,7 +18,8 @@ export default function NewMonth() {
   useEffect(() => {
     async function load() {
       if (editId) {
-        const existing = await getMonth(Number(editId))
+        // editId is a UUID string (not an integer)
+        const existing = await getMonth(editId)
         if (existing) {
           setRecord(existing)
           setLoading(false)
@@ -37,8 +38,8 @@ export default function NewMonth() {
         return
       }
 
-      const settings = await getSettings()
-      const fresh = emptyMonthRecord(key, now.getFullYear(), settings)
+      const s = await getSettings()
+      const fresh = emptyMonthRecord(key, now.getFullYear(), s)
 
       const previous = (await listMonths())[0]
       if (previous) {
